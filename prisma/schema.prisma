@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OAuthProvider {
+  SPOTIFY
+  APPLE_MUSIC
+}
+
+enum LinkSessionStatus {
+  PENDING
+  CONNECTED
+  REVOKED
+}
+
+model LinkedAccount {
+  id             String        @id @default(cuid()) @unique
+  providerUserId String        @unique
+
+  provider       OAuthProvider
+  scopes         String?       // space-separated scopes
+
+  accessToken    String
+  accessTokenIv  String
+  accessTokenTag String
+  accessTokenExpiresAt DateTime
+
+  refreshToken   String
+  refreshTokenIv String
+  refreshTokenTag String
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  linkSessions   LinkSession[]
+
+  @@index([provider])
+}
+
+model LinkSession {
+  id              String            @id @default(cuid())
+
+  // This is what the agent holds. Store only a hash of it.
+  tokenHash       String            @unique
+
+  provider        OAuthProvider
+  status          LinkSessionStatus @default(PENDING)
+
+  oauthState      String
+  oauthStateExp   DateTime
+
+  linkedAccountId String?
+  linkedAccount   LinkedAccount?    @relation(fields: [linkedAccountId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  expiresAt       DateTime
+
+  @@index([provider, status])
+  @@index([linkedAccountId])
+  @@index([oauthState])
+}
