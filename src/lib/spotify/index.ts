@@ -1,5 +1,5 @@
 import axios from "axios";
-import { env } from "./env";
+import { env } from "../env";
 import { SpotifyCallbackResponseSchema, SpotifyFollowingResponseSchema, SpotifyUserSchema } from "./types";
 
 export const SPOTIFY_SCOPES = [
