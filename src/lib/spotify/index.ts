@@ -1,6 +1,6 @@
 import axios from "axios";
 import { env } from "../env";
-import { SpotifyCallbackResponseSchema, SpotifyFollowingResponseSchema, SpotifyUserSchema } from "./types";
+import { SpotifyTokenResponseSchema, SpotifyFollowingResponseSchema, SpotifyUserSchema } from "./types";
 
 export const SPOTIFY_SCOPES = [
     "user-read-private",
@@ -62,7 +62,7 @@ export const authenticateSpotify = async (code: string) => {
       };
 
     const response = await axios.post(authOptions.url, authOptions.form, { headers: authOptions.headers });
-    return SpotifyCallbackResponseSchema.parse(response.data);
+    return SpotifyTokenResponseSchema.parse(response.data);
 }
 
 /**
@@ -84,4 +84,26 @@ export const getSpotifyFollowing = async (accessToken: string, limit: number) =>
 export const getSpotifyUserInfo = async (accessToken: string) => {
     const userInfo = await spotifyApiClient(accessToken).get(`/me`);
     return SpotifyUserSchema.parse(userInfo.data);
+}
+
+/**
+ * Refreshes the Spotify access token
+ * @param refreshToken - The refresh token to use for the refresh
+ * @returns The Spotify token response
+ */
+export const refreshSpotifyAccessToken = async (refreshToken: string) => {
+    const tokenResponse = await axios.post(
+        `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
+        new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+        }),
+        {
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + Buffer.from(env.SPOTIFY_CLIENT_ID + ':' + env.SPOTIFY_CLIENT_SECRET).toString('base64')
+            }
+        }
+    );
+    return SpotifyTokenResponseSchema.parse(tokenResponse.data);
 }

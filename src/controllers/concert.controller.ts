@@ -2,9 +2,7 @@ import { Request, Response } from "express";
 import { ConcertsQuerySchema } from "../lib/types";
 import prisma from "../lib/prisma";
 import { decryptToken, encryptToken, hash } from "../lib/crypto";
-import axios from "axios";
-import { env } from "../lib/env";
-import { getSpotifyFollowing } from "../lib/spotify";
+import { getSpotifyFollowing, refreshSpotifyAccessToken } from "../lib/spotify";
 import { getTicketmasterConcerts } from "../lib/ticketmaster";
 
 export const getConcerts = async (req: Request, res: Response): Promise<void> => {
@@ -50,25 +48,10 @@ export const getConcerts = async (req: Request, res: Response): Promise<void> =>
                 tag: session.linkedAccount.refreshTokenTag
             });
 
-            const tokenResponse = await axios.post(
-                `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
-                new URLSearchParams({
-                    grant_type: 'refresh_token',
-                    refresh_token: refreshToken,
-                }),
-                {
-                    headers: {
-                        'content-type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic ' + Buffer.from(env.SPOTIFY_CLIENT_ID + ':' + env.SPOTIFY_CLIENT_SECRET).toString('base64')
-                    }
-                }
-            );
-
-            const { access_token, expires_in } = tokenResponse.data;
-            accessToken = access_token;
+            const { access_token: accessToken, expires_in } = await refreshSpotifyAccessToken(refreshToken);
 
             // Encrypt and save new access token
-            const accessTokenEnc = encryptToken(access_token);
+            const accessTokenEnc = encryptToken(accessToken);
             await prisma.linkedAccount.update({
                 where: { id: session.linkedAccount.id },
                 data: {
