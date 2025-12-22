@@ -15,16 +15,19 @@ app.use(express.urlencoded({ extended: true })); // parse url encoded body
 
 app.use(`/api/${env.API_VERSION}/link`, linkRoute);
 app.use(`/api/${env.API_VERSION}/concert`, concertRoute);
-app.get(`/api/${env.API_VERSION}/health`, async (_req: Request, res: Response): Promise<void> => {
-  // check db connection
-  try {
-    await prisma.linkSession.findFirst();
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Database connection failed");
-  }
-  res.status(200).send("OK");
-});
+app.get(
+  `/api/${env.API_VERSION}/health`,
+  async (_req: Request, res: Response): Promise<void> => {
+    // check db connection
+    try {
+      await prisma.linkSession.findFirst();
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Database connection failed");
+    }
+    res.status(200).send("OK");
+  },
+);
 
 app.use(errorHandler);
 app.listen(env.PORT, (): void => {

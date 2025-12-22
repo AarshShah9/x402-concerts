@@ -1,27 +1,31 @@
 import axios from "axios";
 import { env } from "../env";
-import { SpotifyTokenResponseSchema, SpotifyFollowingResponseSchema, SpotifyUserSchema } from "./types";
+import {
+  SpotifyTokenResponseSchema,
+  SpotifyFollowingResponseSchema,
+  SpotifyUserSchema,
+} from "./types";
 
 export const SPOTIFY_SCOPES = [
-    "user-read-private",
-    "user-read-email",
-    "user-read-recently-played",
-    "user-top-read",
-    "user-follow-read",
-]
+  "user-read-private",
+  "user-read-email",
+  "user-read-recently-played",
+  "user-top-read",
+  "user-follow-read",
+];
 
 /**
  * Creates an axios instance for the Spotify API
  * @param accessToken - The access token to use for the API calls
- * @returns 
+ * @returns
  */
 const spotifyApiClient = (accessToken: string) => {
-    return axios.create({
-        baseURL: env.SPOTIFY_API_URL,
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        },
-    });
+  return axios.create({
+    baseURL: env.SPOTIFY_API_URL,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 };
 
 /**
@@ -30,16 +34,16 @@ const spotifyApiClient = (accessToken: string) => {
  * @returns The Spotify authorization URL
  */
 export const generateSpotifyAuthUrl = (oauthState: string) => {
-    const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: env.SPOTIFY_CLIENT_ID,
-        scope: SPOTIFY_SCOPES.join(' '),
-        redirect_uri: env.SPOTIFY_REDIRECT_URI,
-        state: oauthState,
-      });
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: env.SPOTIFY_CLIENT_ID,
+    scope: SPOTIFY_SCOPES.join(" "),
+    redirect_uri: env.SPOTIFY_REDIRECT_URI,
+    state: oauthState,
+  });
 
-    return `${env.SPOTIFY_AUTHORIZATION_URL}/authorize?${params.toString()}`;
-}
+  return `${env.SPOTIFY_AUTHORIZATION_URL}/authorize?${params.toString()}`;
+};
 
 /**
  * Authenticates with the Spotify API using the given code
@@ -47,23 +51,29 @@ export const generateSpotifyAuthUrl = (oauthState: string) => {
  * @returns The Spotify callback response
  */
 export const authenticateSpotify = async (code: string) => {
-    const authOptions = {
-        url: `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
-        form: {
-          code: code,
-          redirect_uri: env.SPOTIFY_REDIRECT_URI,
-          grant_type: 'authorization_code'
-        },
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + Buffer.from(env.SPOTIFY_CLIENT_ID + ':' + env.SPOTIFY_CLIENT_SECRET).toString('base64')
-        },
-        json: true
-      };
+  const authOptions = {
+    url: `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
+    form: {
+      code: code,
+      redirect_uri: env.SPOTIFY_REDIRECT_URI,
+      grant_type: "authorization_code",
+    },
+    headers: {
+      "content-type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Basic " +
+        Buffer.from(
+          env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET,
+        ).toString("base64"),
+    },
+    json: true,
+  };
 
-    const response = await axios.post(authOptions.url, authOptions.form, { headers: authOptions.headers });
-    return SpotifyTokenResponseSchema.parse(response.data);
-}
+  const response = await axios.post(authOptions.url, authOptions.form, {
+    headers: authOptions.headers,
+  });
+  return SpotifyTokenResponseSchema.parse(response.data);
+};
 
 /**
  * Gets the following artists from the Spotify API
@@ -71,10 +81,15 @@ export const authenticateSpotify = async (code: string) => {
  * @param limit - The limit of artists to get
  * @returns The Spotify following response
  */
-export const getSpotifyFollowing = async (accessToken: string, limit: number) => {
-    const followed = await spotifyApiClient(accessToken).get(`me/following?type=artist&limit=${limit}`);
-    return SpotifyFollowingResponseSchema.parse(followed.data);
-}
+export const getSpotifyFollowing = async (
+  accessToken: string,
+  limit: number,
+) => {
+  const followed = await spotifyApiClient(accessToken).get(
+    `me/following?type=artist&limit=${limit}`,
+  );
+  return SpotifyFollowingResponseSchema.parse(followed.data);
+};
 
 /**
  * Gets the user info from the Spotify API
@@ -82,9 +97,9 @@ export const getSpotifyFollowing = async (accessToken: string, limit: number) =>
  * @returns The Spotify user info
  */
 export const getSpotifyUserInfo = async (accessToken: string) => {
-    const userInfo = await spotifyApiClient(accessToken).get(`/me`);
-    return SpotifyUserSchema.parse(userInfo.data);
-}
+  const userInfo = await spotifyApiClient(accessToken).get(`/me`);
+  return SpotifyUserSchema.parse(userInfo.data);
+};
 
 /**
  * Refreshes the Spotify access token
@@ -92,18 +107,22 @@ export const getSpotifyUserInfo = async (accessToken: string) => {
  * @returns The Spotify token response
  */
 export const refreshSpotifyAccessToken = async (refreshToken: string) => {
-    const tokenResponse = await axios.post(
-        `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
-        new URLSearchParams({
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken,
-        }),
-        {
-            headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + Buffer.from(env.SPOTIFY_CLIENT_ID + ':' + env.SPOTIFY_CLIENT_SECRET).toString('base64')
-            }
-        }
-    );
-    return SpotifyTokenResponseSchema.parse(tokenResponse.data);
-}
+  const tokenResponse = await axios.post(
+    `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
+    new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+    {
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        Authorization:
+          "Basic " +
+          Buffer.from(
+            env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET,
+          ).toString("base64"),
+      },
+    },
+  );
+  return SpotifyTokenResponseSchema.parse(tokenResponse.data);
+};

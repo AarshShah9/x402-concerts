@@ -1,19 +1,22 @@
 import axios from "axios";
 import { env } from "../env";
-import { TicketmasterEventQueryParams, TicketmasterEventResponseSchema } from "./types";
+import {
+  TicketmasterEventQueryParams,
+  TicketmasterEventResponseSchema,
+} from "./types";
 
 /**
  * Creates an axios instance for the Ticketmaster API
  * @returns The Ticketmaster API client
  */
 const ticketmasterApiClient = axios.create({
-    baseURL: env.TICKETMASTER_API_URL,
-    params: {
-        apikey: env.TICKETMASTER_API_KEY,
-    },
-    headers: {
-        "Content-Type": "application/json",
-    },
+  baseURL: env.TICKETMASTER_API_URL,
+  params: {
+    apikey: env.TICKETMASTER_API_KEY,
+  },
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 /**
@@ -21,9 +24,14 @@ const ticketmasterApiClient = axios.create({
  * @param config - The configuration for the request
  * @returns The Ticketmaster event response
  */
-export const getTicketmasterConcerts = async (config: TicketmasterEventQueryParams) => {
-    const concerts = await ticketmasterApiClient.get(`/discovery/v2/events.json`, {
-        params: config
-    });
-    return TicketmasterEventResponseSchema.parse(concerts.data);
-}
+export const getTicketmasterConcerts = async (
+  config: TicketmasterEventQueryParams,
+) => {
+  const concerts = await ticketmasterApiClient.get(
+    `/discovery/v2/events.json`,
+    {
+      params: config,
+    },
+  );
+  return TicketmasterEventResponseSchema.parse(concerts.data);
+};

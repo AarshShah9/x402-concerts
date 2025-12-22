@@ -13,7 +13,10 @@ export function encryptToken(plaintext: string) {
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv("aes-256-gcm", env.SECRET_KEY, iv);
 
-  const ciphertext = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  const ciphertext = Buffer.concat([
+    cipher.update(plaintext, "utf8"),
+    cipher.final(),
+  ]);
   const tag = cipher.getAuthTag();
 
   return {
@@ -23,7 +26,11 @@ export function encryptToken(plaintext: string) {
   };
 }
 
-export function decryptToken(enc: { ciphertext: string; iv: string; tag: string }) {
+export function decryptToken(enc: {
+  ciphertext: string;
+  iv: string;
+  tag: string;
+}) {
   const iv = Buffer.from(enc.iv, "base64");
   const tag = Buffer.from(enc.tag, "base64");
   const decipher = crypto.createDecipheriv("aes-256-gcm", env.SECRET_KEY, iv);

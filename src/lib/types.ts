@@ -10,7 +10,6 @@ export const LinkCallbackSchema = z.object({
   state: z.coerce.string(),
 });
 
-
 export const ConcertsQuerySchema = z
   .object({
     link_session_token: z.string().min(1),
@@ -36,4 +35,4 @@ export const ConcertsQuerySchema = z
         message: "end_date must be on or after start_date",
       });
     }
-});
+  });

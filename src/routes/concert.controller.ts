@@ -17,12 +17,12 @@ import express from "express";
 //                 price: env.X402_PRICE,
 //                 network:  env.X402_NETWORK,
 //             }]
-            
+
 //         },
 //     },
 // });
 
-const router = express.Router(); // temp router 
+const router = express.Router(); // temp router
 
 router.get("/", getConcerts);
 export default router;
