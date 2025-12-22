@@ -1,0 +1,11 @@
+curl -X GET "http://localhost:3000/api/v1/concert?\
+link_session_token=2oQsj881FJJUgJKNyfaHVVm4c1gTfnnrbGdYBTkB5jk\
+&lat=51.0447\
+&lng=-114.0719\
+&radius_km=50\
+&start_date=2025-03-01\
+&end_date=2025-06-01\
+&limit=25\
+&min_artist_rank=50\
+&refresh=false"\
+  -H "Accept: application/json"

@@ -2,15 +2,31 @@ import express from "express";
 import type { Request, Response } from "express";
 import { env } from "./lib/env";
 import morgan from "morgan";
+import prisma from "./lib/prisma";
+import linkRoute from "./routes/link.route";
+import concertRoute from "./routes/concert.controller";
+import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
 app.use(morgan("dev")); // logging middleware
+app.use(express.json()); // parse json body
+app.use(express.urlencoded({ extended: true })); // parse url encoded body
 
-app.get("/health", (_req: Request, res: Response): void => {
+app.use(`/api/${env.API_VERSION}/link`, linkRoute);
+app.use(`/api/${env.API_VERSION}/concert`, concertRoute);
+app.get(`/api/${env.API_VERSION}/health`, async (_req: Request, res: Response): Promise<void> => {
+  // check db connection
+  try {
+    await prisma.linkSession.findFirst();
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Database connection failed");
+  }
   res.status(200).send("OK");
 });
 
+app.use(errorHandler);
 app.listen(env.PORT, (): void => {
   console.log(`Server is running at http://localhost:${env.PORT}`);
 });
