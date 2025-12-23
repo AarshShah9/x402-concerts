@@ -1,0 +1,7 @@
+curl -X POST http://localhost:3000/api/v1/link/init \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "SPOTIFY",
+    "client_type": "AI_AGENT",
+    "link_session_token": "abc123..."
+  }'

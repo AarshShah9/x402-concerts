@@ -1,5 +1,5 @@
 curl -X GET "http://localhost:3000/api/v1/concert?\
-link_session_token=2oQsj881FJJUgJKNyfaHVVm4c1gTfnnrbGdYBTkB5jk\
+link_session_token=Z_xki8M-Iv1CiyM9rFetdQrS99Q2Lq7tNGtjmeIYRDk\
 &lat=51.0447\
 &lng=-114.0719\
 &radius_km=50\

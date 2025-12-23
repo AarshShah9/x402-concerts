@@ -51,7 +51,7 @@ model LinkSession {
   provider        OAuthProvider
   status          LinkSessionStatus @default(PENDING)
 
-  oauthState      String
+  oauthState      String            @unique
   oauthStateExp   DateTime
 
   linkedAccountId String?

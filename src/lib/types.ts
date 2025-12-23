@@ -1,9 +1,20 @@
 import { z } from "zod";
 
-export const LinkInitSchema = z.object({
-  provider: z.enum(["SPOTIFY", "APPLE_MUSIC"]),
-  client_type: z.enum(["AI_AGENT", "WEB"]).optional().default("WEB"),
-});
+export const LinkInitSchema = z
+  .object({
+    provider: z.enum(["SPOTIFY", "APPLE_MUSIC"]),
+    client_type: z.enum(["AI_AGENT", "WEB"]).optional().default("WEB"),
+    link_session_token: z.string().min(1).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.link_session_token && v.client_type !== "AI_AGENT") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["link_session_token"],
+        message: "link_session_token can only be provided for AI_AGENT client type",
+      });
+    }
+  });
 
 export const LinkCallbackSchema = z.object({
   code: z.coerce.string(),

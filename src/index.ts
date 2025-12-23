@@ -4,7 +4,7 @@ import { env } from "./lib/env";
 import morgan from "morgan";
 import prisma from "./lib/prisma";
 import linkRoute from "./routes/link.route";
-import concertRoute from "./routes/concert.controller";
+import concertRoute from "./routes/concert.route";
 import { errorHandler } from "./middleware/errorHandler";
 import { asyncHandler } from "./middleware/asyncHandler";
 
