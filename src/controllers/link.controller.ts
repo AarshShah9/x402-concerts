@@ -9,55 +9,49 @@ import {
   generateSpotifyAuthUrl,
   getSpotifyUserInfo,
 } from "../lib/spotify";
+import { AppError } from "../lib/errors";
 
 export const init = async (req: Request, res: Response): Promise<void> => {
-  try {
-    // validate request body
-    const { provider, client_type } = LinkInitSchema.parse(req.body);
+  // validate request body
+  const { provider, client_type } = LinkInitSchema.parse(req.body);
 
-    // todo remove once we support more providers + get seperate service layers for different providers
-    if (provider !== "SPOTIFY") {
-      res.status(400).json({ error: "Only SPOTIFY is supported for now" });
+  // todo remove once we support more providers + get seperate service layers for different providers
+  if (provider !== "SPOTIFY") {
+    throw new AppError("Only SPOTIFY is supported for now", 400);
+  }
+
+  const oauthState = crypto.randomUUID();
+  const oauthStateExp = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  const expiresAt = new Date(Date.now() + 90 * 60 * 1000); // 90 minutes
+  const rawSessionToken = crypto.randomBytes(32).toString("base64url");
+  const tokenHash = hash(rawSessionToken);
+  const authUrl = generateSpotifyAuthUrl(oauthState);
+
+  const linkSession = await prisma.linkSession.create({
+    data: {
+      provider,
+      oauthState,
+      oauthStateExp,
+      expiresAt,
+      tokenHash,
+    },
+  });
+
+  switch (client_type) {
+    case "AI_AGENT":
+      res.status(200).json({
+        auth_url: authUrl,
+        link_session_token: rawSessionToken,
+        session: {
+          id: linkSession.id,
+          provider: linkSession.provider,
+          expiresAt: linkSession.expiresAt,
+        },
+      });
       return;
-    }
-
-    const oauthState = crypto.randomUUID();
-    const oauthStateExp = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-    const expiresAt = new Date(Date.now() + 90 * 60 * 1000); // 90 minutes
-    const rawSessionToken = crypto.randomBytes(32).toString("base64url");
-    const tokenHash = hash(rawSessionToken);
-    const authUrl = generateSpotifyAuthUrl(oauthState);
-
-    const linkSession = await prisma.linkSession.create({
-      data: {
-        provider,
-        oauthState,
-        oauthStateExp,
-        expiresAt,
-        tokenHash,
-      },
-    });
-
-    switch (client_type) {
-      case "AI_AGENT":
-        res.status(200).json({
-          auth_url: authUrl,
-          link_session_token: rawSessionToken,
-          session: {
-            id: linkSession.id,
-            provider: linkSession.provider,
-            expiresAt: linkSession.expiresAt,
-          },
-        });
-        return;
-      case "WEB":
-        res.redirect(authUrl);
-        return;
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error });
-    return;
+    case "WEB":
+      res.redirect(authUrl);
+      return;
   }
 };
 
@@ -75,13 +69,11 @@ export const callback = async (req: Request, res: Response): Promise<void> => {
   });
 
   if (!linkSession) {
-    res.status(404).json({ error: "Link session not found" });
-    return;
+    throw new AppError("Link session not found", 404);
   }
   if (linkSession.linkedAccount !== null) {
     // todo what should we do here?
-    res.status(400).json({ error: "Link session already connected" });
-    return;
+    throw new AppError("Link session already connected", 400);
   }
   if (linkSession.oauthStateExp < new Date()) {
     await prisma.linkSession.update({
@@ -90,8 +82,7 @@ export const callback = async (req: Request, res: Response): Promise<void> => {
         status: "EXPIRED",
       },
     });
-    res.status(400).json({ error: "OAuth state expired, restart linking" });
-    return;
+    throw new AppError("OAuth state expired, restart linking", 400);
   }
 
   // get the user id from the spotify api (TODO or apple music api)
@@ -101,7 +92,7 @@ export const callback = async (req: Request, res: Response): Promise<void> => {
   const refreshTokenEnc = encryptToken(callbackResponse.refresh_token);
 
   // create a linked account
-  const transactionResult = await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     const linkedAccount = await tx.linkedAccount.create({
       data: {
         providerUserId: userInfo.id,
@@ -126,9 +117,7 @@ export const callback = async (req: Request, res: Response): Promise<void> => {
         linkedAccountId: linkedAccount.id,
       },
     });
-    return linkedAccount;
   });
 
   res.status(200).json({ success: true });
-  return;
 };

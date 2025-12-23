@@ -4,6 +4,7 @@ import {
   TicketmasterEventQueryParams,
   TicketmasterEventResponseSchema,
 } from "./types";
+import { AppError } from "../errors";
 
 /**
  * Creates an axios instance for the Ticketmaster API
@@ -27,11 +28,18 @@ const ticketmasterApiClient = axios.create({
 export const getTicketmasterConcerts = async (
   config: TicketmasterEventQueryParams,
 ) => {
-  const concerts = await ticketmasterApiClient.get(
-    `/discovery/v2/events.json`,
-    {
-      params: config,
-    },
-  );
-  return TicketmasterEventResponseSchema.parse(concerts.data);
+  try {
+    const concerts = await ticketmasterApiClient.get(
+      `/discovery/v2/events.json`,
+      {
+        params: config,
+      },
+    );
+    return TicketmasterEventResponseSchema.parse(concerts.data);
+  } catch (error) {
+      throw new AppError(
+        `Failed to fetch Ticketmaster concerts: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+        502,
+      );
+  }
 };

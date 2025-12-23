@@ -5,6 +5,7 @@ import {
   SpotifyFollowingResponseSchema,
   SpotifyUserSchema,
 } from "./types";
+import { AppError } from "../errors";
 
 export const SPOTIFY_SCOPES = [
   "user-read-private",
@@ -51,28 +52,35 @@ export const generateSpotifyAuthUrl = (oauthState: string) => {
  * @returns The Spotify callback response
  */
 export const authenticateSpotify = async (code: string) => {
-  const authOptions = {
-    url: `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
-    form: {
-      code: code,
-      redirect_uri: env.SPOTIFY_REDIRECT_URI,
-      grant_type: "authorization_code",
-    },
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      Authorization:
-        "Basic " +
-        Buffer.from(
-          env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET,
-        ).toString("base64"),
-    },
-    json: true,
-  };
+  try {
+    const authOptions = {
+      url: `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
+      form: {
+        code: code,
+        redirect_uri: env.SPOTIFY_REDIRECT_URI,
+        grant_type: "authorization_code",
+      },
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        Authorization:
+          "Basic " +
+          Buffer.from(
+            env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET,
+          ).toString("base64"),
+      },
+      json: true,
+    };
 
-  const response = await axios.post(authOptions.url, authOptions.form, {
-    headers: authOptions.headers,
-  });
-  return SpotifyTokenResponseSchema.parse(response.data);
+    const response = await axios.post(authOptions.url, authOptions.form, {
+      headers: authOptions.headers,
+    });
+    return SpotifyTokenResponseSchema.parse(response.data);
+  } catch (error) {
+    throw new AppError(
+      `Spotify authentication failed: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+      502,
+    );
+  }
 };
 
 /**
@@ -85,10 +93,17 @@ export const getSpotifyFollowing = async (
   accessToken: string,
   limit: number,
 ) => {
-  const followed = await spotifyApiClient(accessToken).get(
-    `me/following?type=artist&limit=${limit}`,
-  );
-  return SpotifyFollowingResponseSchema.parse(followed.data);
+  try {
+    const followed = await spotifyApiClient(accessToken).get(
+      `me/following?type=artist&limit=${limit}`,
+    );
+    return SpotifyFollowingResponseSchema.parse(followed.data);
+  } catch (error) {
+      throw new AppError(
+        `Failed to fetch Spotify following: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+      502,
+    );
+  }
 };
 
 /**
@@ -97,8 +112,15 @@ export const getSpotifyFollowing = async (
  * @returns The Spotify user info
  */
 export const getSpotifyUserInfo = async (accessToken: string) => {
-  const userInfo = await spotifyApiClient(accessToken).get(`/me`);
-  return SpotifyUserSchema.parse(userInfo.data);
+  try {
+    const userInfo = await spotifyApiClient(accessToken).get(`/me`);
+    return SpotifyUserSchema.parse(userInfo.data);
+  } catch (error) {
+      throw new AppError(
+        `Failed to fetch Spotify user info: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+        502,
+      );
+  }
 };
 
 /**
@@ -107,22 +129,29 @@ export const getSpotifyUserInfo = async (accessToken: string) => {
  * @returns The Spotify token response
  */
 export const refreshSpotifyAccessToken = async (refreshToken: string) => {
-  const tokenResponse = await axios.post(
-    `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
-    new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-    }),
-    {
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " +
-          Buffer.from(
-            env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET,
-          ).toString("base64"),
+  try {
+    const tokenResponse = await axios.post(
+      `${env.SPOTIFY_AUTHORIZATION_URL}/api/token`,
+      new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }),
+      {
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          Authorization:
+            "Basic " +
+            Buffer.from(
+              env.SPOTIFY_CLIENT_ID + ":" + env.SPOTIFY_CLIENT_SECRET,
+            ).toString("base64"),
+        },
       },
-    },
-  );
-  return SpotifyTokenResponseSchema.parse(tokenResponse.data);
+    );
+    return SpotifyTokenResponseSchema.parse(tokenResponse.data);
+  } catch (error) {
+    throw new AppError(
+      `Failed to refresh Spotify access token: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+      502,
+    );
+  }
 };

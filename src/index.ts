@@ -6,6 +6,7 @@ import prisma from "./lib/prisma";
 import linkRoute from "./routes/link.route";
 import concertRoute from "./routes/concert.controller";
 import { errorHandler } from "./middleware/errorHandler";
+import { asyncHandler } from "./middleware/asyncHandler";
 
 const app = express();
 
@@ -17,16 +18,11 @@ app.use(`/api/${env.API_VERSION}/link`, linkRoute);
 app.use(`/api/${env.API_VERSION}/concert`, concertRoute);
 app.get(
   `/api/${env.API_VERSION}/health`,
-  async (_req: Request, res: Response): Promise<void> => {
+  asyncHandler(async (_req: Request, res: Response): Promise<void> => {
     // check db connection
-    try {
-      await prisma.linkSession.findFirst();
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Database connection failed");
-    }
+    await prisma.linkSession.findFirst();
     res.status(200).send("OK");
-  },
+  }),
 );
 
 app.use(errorHandler);
