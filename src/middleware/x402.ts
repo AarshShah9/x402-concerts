@@ -15,12 +15,7 @@ export function createX402PaywalledRouter(opts: {
     new HTTPFacilitatorClient({ url: env.X402_FACILITATOR_URL }),
   ).register(opts.network, new ExactEvmScheme());
 
-  router.use(
-    paymentMiddleware(
-      opts.routes,
-      server,
-    ),
-  );
+  router.use(paymentMiddleware(opts.routes, server));
 
   return router;
 }
