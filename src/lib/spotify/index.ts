@@ -158,7 +158,12 @@ export const refreshSpotifyAccessToken = async (refreshToken: string) => {
   }
 };
 
-
+/**
+ * Gets the top artists from the Spotify API
+ * @param accessToken - The access token to use for the API calls
+ * @param params - The parameters to use for the API call
+ * @returns The Spotify top artists response
+ */
 export const getSpotifyTopArtists = async (accessToken: string, params: SpotifyTopArtistParams) => {
   try {
     const artists = await spotifyApiClient(accessToken).get(`me/top/artists`, { params });
