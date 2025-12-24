@@ -2,6 +2,9 @@
 
 An Express API that integrates music providers (Spotify supported for now) listening data with Ticketmaster to find concerts for artists you follow. Uses X402 protocol for micropayments to access the API.
 
+<img width="1400" height="1100" alt="diagram" src="https://github.com/user-attachments/assets/6aed277e-ace7-48cf-a1d2-35e0507deee0" />
+
+
 ## Overview
 
 This API combines your music streaming habits with concert discovery:
