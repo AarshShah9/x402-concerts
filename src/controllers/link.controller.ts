@@ -21,8 +21,9 @@ const generateSessionToken = () => {
 
 export const init = async (req: Request, res: Response): Promise<void> => {
   // validate request body
-  const { provider, client_type, link_session_token } =
-    LinkInitSchema.parse(req.body);
+  const { provider, client_type, link_session_token } = LinkInitSchema.parse(
+    req.body,
+  );
 
   // todo remove once we support more providers + get seperate service layers for different providers
   if (provider !== "SPOTIFY") {

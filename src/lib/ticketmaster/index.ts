@@ -37,9 +37,9 @@ export const getTicketmasterConcerts = async (
     );
     return TicketmasterEventResponseSchema.parse(concerts.data);
   } catch (error) {
-      throw new AppError(
-        `Failed to fetch Ticketmaster concerts: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
-        502,
-      );
+    throw new AppError(
+      `Failed to fetch Ticketmaster concerts: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+      502,
+    );
   }
 };

@@ -99,8 +99,8 @@ export const getSpotifyFollowing = async (
     );
     return SpotifyFollowingResponseSchema.parse(followed.data);
   } catch (error) {
-      throw new AppError(
-        `Failed to fetch Spotify following: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+    throw new AppError(
+      `Failed to fetch Spotify following: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
       502,
     );
   }
@@ -116,10 +116,10 @@ export const getSpotifyUserInfo = async (accessToken: string) => {
     const userInfo = await spotifyApiClient(accessToken).get(`/me`);
     return SpotifyUserSchema.parse(userInfo.data);
   } catch (error) {
-      throw new AppError(
-        `Failed to fetch Spotify user info: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
-        502,
-      );
+    throw new AppError(
+      `Failed to fetch Spotify user info: ${axios.isAxiosError(error) ? error.message : "Unknown error"}`,
+      502,
+    );
   }
 };
 
