@@ -11,7 +11,8 @@ export const LinkInitSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["link_session_token"],
-        message: "link_session_token can only be provided for AI_AGENT client type",
+        message:
+          "link_session_token can only be provided for AI_AGENT client type",
       });
     }
   });

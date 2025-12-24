@@ -6,6 +6,10 @@ import { getSpotifyFollowing, refreshSpotifyAccessToken } from "../lib/spotify";
 import { getTicketmasterConcerts } from "../lib/ticketmaster";
 import { AppError } from "../lib/errors";
 
+export const test = async (req: Request, res: Response): Promise<void> => {
+  res.status(200).json({ message: "Test route" });
+};
+
 export const getConcerts = async (
   req: Request,
   res: Response,

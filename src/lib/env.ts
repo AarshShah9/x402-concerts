@@ -20,16 +20,16 @@ const envSchema = z.object({
     .url()
     .default("http://localhost:3000/api/v1/link/callback"),
   SESSION_TOKEN_SECRET: z.string().min(32),
-  X402_FACILITATOR_URL: z.url().default("https://facilitator.x402.com"),
+  X402_FACILITATOR_URL: z.url().default("https://x402.org/facilitator"),
   X402_PAY_TO: z.string().default("0x0000000000000000000000000000000000000000"),
-  X402_NETWORK: z
-    .enum(["base:mainnet", "base:testnet"])
-    .default("base:mainnet"),
-  X402_PRICE: z.number().default(0.01),
-  X402_SCHEME: z.enum(["exact:evm"]).default("exact:evm"),
+  X402_NETWORK: z.enum(["eip155:8453", "eip155:84532"]).default("eip155:84532"),
+  X402_PRICE: z.string().default("$0.01"),
+  X402_SCHEME: z.enum(["exact"]).default("exact"),
   TICKETMASTER_API_URL: z.url().default("https://app.ticketmaster.com"),
   TICKETMASTER_API_KEY: z.string(),
   SECRET_KEY: z.string().length(32),
+  // Test-only variables
+  TEST_WALLET_PRIVATE_KEY: z.string().optional(),
 });
 
 dotenv.config();
