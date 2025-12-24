@@ -18,6 +18,10 @@ enum LinkSessionStatus {
   REVOKED
 }
 
+enum EventSource {
+  TICKETMASTER
+}
+
 model LinkedAccount {
   id             String        @id @default(cuid()) @unique
   providerUserId String        @unique
@@ -64,4 +68,118 @@ model LinkSession {
   @@index([provider, status])
   @@index([linkedAccountId])
   @@index([oauthState])
+}
+
+model Attraction {
+  id            String      @id @default(cuid())
+  source        EventSource
+  sourceId      String
+  name          String
+  aliases       String[]
+  imageUrl      String?
+  externalLinks Json?
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  eventAttractions EventAttraction[]
+  
+  @@unique([source, sourceId])
+  @@index([name])
+  @@index([source])
+}
+
+model Venue {
+  id          String      @id @default(cuid())
+  source      EventSource
+  sourceId    String
+  name        String
+  city        String?
+  state       String?
+  country     String
+  postalCode  String?
+  latitude    Float?
+  longitude   Float?
+  address     String?
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  events      Event[]
+  
+  @@unique([source, sourceId])
+  @@index([country])
+  @@index([latitude, longitude])
+  @@index([source])
+}
+
+model Event {
+  id                String      @id @default(cuid())
+  source            EventSource
+  sourceId          String
+  name              String
+  url               String?
+  imageUrl          String?
+  
+  startDate         DateTime?
+  startDateTime     DateTime?
+  timezone          String?
+  dateTBD           Boolean     @default(false)
+  dateTBA           Boolean     @default(false)
+  
+  onsaleStartDate   DateTime?
+  onsaleEndDate     DateTime?
+  
+  minPrice          Float?
+  maxPrice          Float?
+  currency          String?
+  
+  genreName         String?
+  segmentName       String?
+  
+  venueId           String
+  venue             Venue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  
+  isTest            Boolean     @default(false)
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  eventAttractions  EventAttraction[]
+  
+  @@unique([source, sourceId])
+  @@index([startDate])
+  @@index([venueId])
+  @@index([segmentName])
+  @@index([isTest])
+  @@index([source])
+}
+
+model EventAttraction {
+  eventId       String
+  attractionId  String
+  
+  event         Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  attraction    Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+  
+  @@id([eventId, attractionId])
+  @@index([attractionId])
+  @@index([eventId])
+}
+
+model FeedSyncStatus {
+  id              String      @id @default(cuid())
+  source          EventSource
+  country         String
+  lastSyncAt      DateTime
+  lastSuccessAt   DateTime?
+  eventsIngested  Int         @default(0)
+  status          String
+  errorMessage    String?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@unique([source, country])
+  @@index([source, status])
 }

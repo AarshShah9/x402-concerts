@@ -7,6 +7,7 @@ import linkRoute from "./routes/link.route.js";
 import concertRoute from "./routes/concert.route.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { asyncHandler } from "./middleware/asyncHandler.js";
+import adminRoute from "./routes/admin.route.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true })); // parse url encoded body
 
 app.use(`/api/${env.API_VERSION}/link`, linkRoute);
 app.use(`/api/${env.API_VERSION}/concert`, concertRoute);
+app.use(`/api/${env.API_VERSION}/admin`, adminRoute);
 app.get(
   `/api/${env.API_VERSION}/health`,
   asyncHandler(async (_req: Request, res: Response): Promise<void> => {

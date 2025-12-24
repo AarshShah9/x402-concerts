@@ -4,6 +4,8 @@ import {
   SpotifyTokenResponseSchema,
   SpotifyFollowingResponseSchema,
   SpotifyUserSchema,
+  SpotifyTopArtistParams,
+  SpotifyTopArtistsTrackResponseSchema,
 } from "./types";
 import { AppError } from "../errors";
 
@@ -155,3 +157,17 @@ export const refreshSpotifyAccessToken = async (refreshToken: string) => {
     );
   }
 };
+
+
+export const getSpotifyTopArtists = async (accessToken: string, params: SpotifyTopArtistParams) => {
+  try {
+    const artists = await spotifyApiClient(accessToken).get(`me/top/artists`, { params });
+    return SpotifyTopArtistsTrackResponseSchema.parse(artists.data);
+  } catch (error) {
+    throw new AppError(
+      `Failed to fetch Spotify top artists: ${(error as any)?.message}`,
+      502,
+    );
+  }
+};
+
