@@ -115,7 +115,7 @@ This project requires a Base Sepolia testnet wallet with USDC for testing X402 m
 
 You need both ETH (for gas) and USDC (for X402 payments) on Base Sepolia:
 
-1. **Get Sepolia ETH**: https://sepoliafaucet.com/
+1. **Get Sepolia ETH**: Throught CDP: https://portal.cdp.coinbase.com/products/faucet or https://sepoliafaucet.com/
    - Enter your wallet address
    - Request test ETH
 
