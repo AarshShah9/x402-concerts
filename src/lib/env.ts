@@ -28,6 +28,10 @@ const envSchema = z.object({
   TICKETMASTER_API_URL: z.url().default("https://app.ticketmaster.com"),
   TICKETMASTER_API_KEY: z.string(),
   SECRET_KEY: z.string().length(32),
+  FEED_SYNC_COUNTRIES: z.string().default("US,CA"),
+  FEED_SYNC_SCHEDULE: z.string().default("0 */6 * * *"),
+  FEED_EVENT_RETENTION_DAYS_PAST: z.coerce.number().default(90),
+  FEED_EVENT_RETENTION_MONTHS_FUTURE: z.coerce.number().default(18),
   // Test-only variables
   TEST_WALLET_PRIVATE_KEY: z.string().optional(),
 });

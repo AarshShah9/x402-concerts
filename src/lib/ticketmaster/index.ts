@@ -25,7 +25,7 @@ const ticketmasterApiClient = axios.create({
  * @param config - The configuration for the request
  * @returns The Ticketmaster event response
  */
-export const getTicketmasterConcerts = async (
+export const getTicketmasterEvents = async (
   config: TicketmasterEventQueryParams,
 ) => {
   try {

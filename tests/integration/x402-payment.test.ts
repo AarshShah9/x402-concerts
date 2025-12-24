@@ -7,6 +7,21 @@ import {
   getPaymentReceipt,
 } from "../helpers/x402-client";
 import { checkWalletBalances, isWalletConfigured } from "../helpers/x402-wallet";
+import * as readline from "readline";
+
+// Helper function to wait for user confirmation during OAuth flow
+const waitForUserConfirmation = (message: string): Promise<void> => {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    rl.question(message, () => {
+      rl.close();
+      resolve();
+    });
+  });
+};
 
 describe("x402 Payment Integration Tests", () => {
   let server: Server;
@@ -140,5 +155,33 @@ describe("x402 Payment Integration Tests", () => {
         const receipt = getPaymentReceipt(response);
         expect(receipt).toBeDefined();
       }, 30000);
+
+    it("should complete payment and access concerts endpoint", async () => {
+      // Step 1: Initialize the link session
+      const initResponse = await request(app)
+        .post("/api/v1/link/init")
+        .send({
+          provider: "SPOTIFY",
+          client_type: "AI_AGENT"
+        });
+
+      expect(initResponse.status).toBe(200);
+      const { auth_url, link_session_token } = initResponse.body;
+      expect(auth_url).toBeDefined();
+      expect(link_session_token).toBeDefined();
+
+      // Step 2: Display the OAuth URL and wait for user to complete login
+      console.log("SPOTIFY OAUTH REQUIRED\nPlease open the following URL in your browser to authorize Spotify:\n" + auth_url + "\n" + "Press Enter to continue...");
+      await waitForUserConfirmation("");
+
+      // Step 3: Make the paid request to the concerts endpoint with the session token
+      const concertsUrl = `http://localhost:3001/api/v1/concert/?link_session_token=${link_session_token}&lat=40.7590167&lng=-73.9896861&radius_km=500&start_date=2025-01-01&end_date=2027-12-31&limit=25`;
+      const response = await makePaidRequest(concertsUrl);
+      
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      console.log("Concerts data received:", data);
+      expect(data).toBeDefined();
+    }, 120000); // Increased timeout to 2 minutes for manual OAuth
   });
 });
